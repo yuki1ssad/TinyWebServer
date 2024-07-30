@@ -6,7 +6,7 @@ void HeapTimer::_del(size_t i)
 
     // 将要删除的结点换到队尾，然后调整堆
     size_t idx = i;
-    size_t last = _heap.szie() - 1;
+    size_t last = _heap.size() - 1;
     assert(idx <= last);
     if (idx < last) {
         _swapNode(idx, last);
@@ -35,7 +35,7 @@ void HeapTimer::_siftup(size_t i)
     }
 }
 
-void HeapTimer::_siftdown(size_t i, size_t n)
+bool HeapTimer::_siftdown(size_t i, size_t n)
 {
     assert(i >= 0 && i < _heap.size());
     assert(n >= 0 && n <= _heap.size());
@@ -119,7 +119,7 @@ void HeapTimer::tick()
     while (!_heap.empty())
     {
         TimerNode nd = _heap.front();
-        if (std::chrono::duration_cast<MS>(nd.expires - Clock::now()).count > 0) {
+        if (std::chrono::duration_cast<MS>(nd.expires - Clock::now()).count() > 0) {
             break;
         }
         nd.cb();
@@ -138,7 +138,7 @@ int HeapTimer::getNextTick()
     tick();
     size_t res = -1;
     if (!_heap.empty()) {
-        res = std::chrono::duration_cast<MS>(_heap.front().expires - Clock::now()).count;
+        res = std::chrono::duration_cast<MS>(_heap.front().expires - Clock::now()).count();
         if (res < 0) {
             res = 0;
         }

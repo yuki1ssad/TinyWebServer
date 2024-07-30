@@ -18,7 +18,7 @@ WebServer::WebServer(
     strncat(_srcDir, "/resources/", 16);
     HttpConn::userCount = 0;
     HttpConn::srcDir = _srcDir;
-    SqlConnPool::Instance()->init("localhost", sqlPort, sqlUser, sqlPwd, dbname, connPoolNum);
+    SqlConnPool::Instance()->init("127.0.0.1", sqlPort, sqlUser, sqlPwd, dbname, connPoolNum);
     _initEventMode(trigMode);
     if (!_initSocket()) {
         _isClose = true;
@@ -92,6 +92,7 @@ bool WebServer::_initSocket()
     }
     addr.sin_family = AF_INET;  // 地址族是 IPv4
     addr.sin_addr.s_addr = htonl(INADDR_ANY);
+    // inet_pton(AF_INET, "172.20.163.106", &addr.sin_addr.s_addr);
     // htonl 函数用于将一个 long 类型的主机字节序的值转换为网络字节序（大端序）。
     // INADDR_ANY 是一个宏，表示“任何可用的接口地址”（在 IPv4 地址中为 0.0.0.0）。用于服务器端，表示监听所有网络接口上的指定端口。
     addr.sin_port = htons(_port);
@@ -237,7 +238,7 @@ void WebServer::_closeConn(HttpConn* client)
     assert(client);
     LOG_INFO("Client[%d] quit!", client->getFd());
     _epoller->delFd(client->getFd());
-    client->close();
+    client->closeConn();
 }
 
 void WebServer::_onRead(HttpConn* client)
@@ -285,7 +286,7 @@ void WebServer::onProcess(HttpConn* client)
 }
 
 
-static int WebServer::setFdNonblock(int fd)
+int WebServer::setFdNonblock(int fd)
 {
     assert(fd > 0);
     return fcntl(fd, F_SETFL, fcntl(fd, F_GETFD, 0) | O_NONBLOCK);

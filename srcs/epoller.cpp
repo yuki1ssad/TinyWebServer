@@ -1,6 +1,6 @@
 #include "epoller.h"
 
-explicit Epoller::Epoller(int maxEvent=1024) :
+Epoller::Epoller(int maxEvent) :
     _epollFd(epoll_create(512)),
     _events(maxEvent)
 {
@@ -43,7 +43,7 @@ bool Epoller::delFd(int fd)
     return 0==epoll_ctl(_epollFd, EPOLL_CTL_DEL, fd, &ev);
 }
 
-int Epoller::wait(int timeoutMs = -1)
+int Epoller::wait(int timeoutMs)
 {
     return epoll_wait(_epollFd, &_events[0], static_cast<int>(_events.size()), timeoutMs);
 }

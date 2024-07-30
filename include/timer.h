@@ -32,10 +32,10 @@ private:
 private:
     void _del(size_t i);    // 删除指定位置的结点
     void _siftup(size_t i);
-    void _siftdown(size_t i, size_t n);
+    bool _siftdown(size_t i, size_t n);
     void _swapNode(size_t i, size_t j);
 public:
-    HeapTimer() {_heap.reserve(64)};
+    HeapTimer() {_heap.reserve(64);}
     ~HeapTimer() {clear();}
 
     void adjust(int id, int timeOut);

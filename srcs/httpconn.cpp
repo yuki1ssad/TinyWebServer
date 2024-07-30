@@ -10,7 +10,7 @@ HttpConn::HttpConn()
 
 HttpConn::~HttpConn()
 {
-    close();
+    closeConn();
 }
 
 void HttpConn::init(int sockFd, const sockaddr_in& addr)
@@ -64,7 +64,7 @@ ssize_t HttpConn::write(int* saveErrno)
     return len;
 }
 
-void HttpConn::close()
+void HttpConn::closeConn()
 {
     _response.unmapFile();
     if (_isClose==false) {
@@ -115,8 +115,8 @@ bool HttpConn::process()
 
     // 文件
     if(_response.fileLen() > 0  && _response.file()) {
-        iov_[1].iov_base = _response.file();
-        iov_[1].iov_len = _response.fileLen();
+        _iov[1].iov_base = _response.file();
+        _iov[1].iov_len = _response.fileLen();
         _iovCnt = 2;
     }
     LOG_DEBUG("filesize:%d, %d  to %d", _response.fileLen() , _iovCnt, toWriteBytes());

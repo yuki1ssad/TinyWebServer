@@ -1,16 +1,16 @@
 #include "httprequest.h"
 
-static const std::unordered_set<std::string> HttpRequest::DEFAULT_HTML
+const std::unordered_set<std::string> HttpRequest::DEFAULT_HTML
 {
     "/index", "/register", "/login", "/welcom", "/video", "/picture",
 };
 
-static const std::unordered_map<std::string, int> HttpRequest::DEFAULT_HTML_TAG
+const std::unordered_map<std::string, int> HttpRequest::DEFAULT_HTML_TAG
 {
     {"/register.html", 0}, {"/login.html", 1}, 
 };
 
-static int HttpRequest::convertHex(char ch)
+int HttpRequest::convertHex(char ch)
 {
     if(ch >= 'A' && ch <= 'F') return ch -'A' + 10;
     if(ch >= 'a' && ch <= 'f') return ch -'a' + 10;
@@ -106,7 +106,7 @@ void HttpRequest::_parseFromUrlencoded()
                 _body[i] = ' ';
                 break;
             case '%':
-                num = ConverHex(_body[i + 1]) * 16 + ConverHex(_body[i + 2]);
+                num = convertHex(_body[i + 1]) * 16 + convertHex(_body[i + 2]);
                 _body[i + 2] = num % 10 + '0';
                 _body[i + 1] = num / 10 + '0';
                 i += 2;
@@ -128,7 +128,7 @@ void HttpRequest::_parseFromUrlencoded()
     }
 }
 
-static bool HttpRequest::userVerify(const std::string& name, const std::string& pwd, bool isLogin)
+bool HttpRequest::userVerify(const std::string& name, const std::string& pwd, bool isLogin)
 {
     if(name == "" || pwd == "") { return false; }
     LOG_INFO("Verify name:%s pwd:%s", name.c_str(), pwd.c_str());
@@ -137,9 +137,9 @@ static bool HttpRequest::userVerify(const std::string& name, const std::string& 
     assert(sql);
     
     bool flag = false;
-    unsigned int j = 0;
+    // unsigned int j = 0;
     char order[256] = { 0 };
-    MYSQL_FIELD *fields = nullptr;
+    // MYSQL_FIELD *fields = nullptr;
     MYSQL_RES *res = nullptr;
     
     if(!isLogin) { flag = true; }
@@ -152,8 +152,8 @@ static bool HttpRequest::userVerify(const std::string& name, const std::string& 
         return false; 
     }
     res = mysql_store_result(sql);
-    j = mysql_num_fields(res);
-    fields = mysql_fetch_fields(res);
+    // j = mysql_num_fields(res);
+    // fields = mysql_fetch_fields(res);
 
     while(MYSQL_ROW row = mysql_fetch_row(res)) {
         LOG_DEBUG("MYSQL ROW: %s %s", row[0], row[1]);
@@ -184,7 +184,7 @@ static bool HttpRequest::userVerify(const std::string& name, const std::string& 
         }
         flag = true;
     }
-    SqlConnPool::Instance()->FreeConn(sql);
+    SqlConnPool::Instance()->freeConn(sql);
     LOG_DEBUG( "UserVerify success!!");
     return flag;
 }
@@ -254,7 +254,7 @@ std::string& HttpRequest::path()
 
 std::string HttpRequest::method() const
 {
-    return _method
+    return _method;
 }
 
 std::string HttpRequest::version() const

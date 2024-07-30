@@ -13,7 +13,7 @@ Log::Log()
 Log::~Log()
 {
     if (_writeThread && _writeThread->joinable()) {
-        while (!_deque.empty())
+        while (!_deque->empty())
         {
             _deque->flush();
         }
@@ -28,7 +28,7 @@ Log::~Log()
     }
 }
 
-Log::getLevel()
+int Log::getLevel()
 {
     std::lock_guard<std::mutex> locker(_mtx);
     return _level;
@@ -58,7 +58,7 @@ void Log::init(int level=1, const char* path, const char* suffix, int maxQueueSi
     _path = path;
     _suffix = suffix;
     char filename[LOG_NAME_LEN] = {0};
-    snprintf(filename, LOG_NAME_LEN - 1, "%s/%04d_%02d%s", _path, t.tm_year + 1990, t.tm_mon + 1, t.tm_mday, +suffix);
+    snprintf(filename, LOG_NAME_LEN - 1, "%s/%04d_%02d_%02d%s", _path, t.tm_year + 1990, t.tm_mon + 1, t.tm_mday, +suffix);
     _toDay = t.tm_mday;
 
     {
@@ -66,7 +66,7 @@ void Log::init(int level=1, const char* path, const char* suffix, int maxQueueSi
         _buff.retrieveAll();
         if (_fp) {
             flush();
-            fclose(_fq);
+            fclose(_fp);
         }
 
         _fp = fopen(filename, "a");
@@ -114,7 +114,7 @@ void Log::write(int level, const char* format, ...)
     }
 
     {
-        std::unique_lock<mutex> locker(_mtx);
+        std::unique_lock<std::mutex> locker(_mtx);
         _lineCount++;
         int n = snprintf(_buff.beginWrite(), 128, "%d-%02d-%02d %02d:%02d:%02d.%06ld ",
                     t.tm_year + 1900, t.tm_mon + 1, t.tm_mday,
@@ -124,7 +124,7 @@ void Log::write(int level, const char* format, ...)
         _appendLogLevelTitle(level);
 
         va_start(vaLst, format);
-        int m = vsnprintf(_buff.beginWrite(), _buff.writableBytes(), format, vaList);
+        int m = vsnprintf(_buff.beginWrite(), _buff.writableBytes(), format, vaLst);
         va_end(vaLst);
 
         _buff.hasWriten(m);
@@ -133,13 +133,13 @@ void Log::write(int level, const char* format, ...)
         if(_isAsync && _deque && !_deque->full()) {
             _deque->push_back(_buff.retrieveAllToStr());
         } else {
-            fputs(_buff.peek(), fp_);
+            fputs(_buff.peek(), _fp);
         }
         _buff.retrieveAll();
     }
 }
 
-void Lod::_appendLogLevelTitle(int level)
+void Log::_appendLogLevelTitle(int level)
 {
     switch(level) {
     case 0:

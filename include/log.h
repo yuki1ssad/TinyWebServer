@@ -4,6 +4,8 @@
 #include <thread>
 #include <mutex>
 #include <sys/time.h>
+#include <sys/stat.h>  // mkdir
+#include <cstdarg>  // va_  处理函数的可变参数
 
 #include "unistd.h"
 #include "blockdeque.h"

@@ -33,7 +33,7 @@ public:
     void init(int sockFd, const sockaddr_in& addr);
     ssize_t read(int* saveErrno);
     ssize_t write(int* saveErrno);
-    void close();
+    void closeConn();
     int getFd() const;
     int getPort() const;
     const char* getIP() const;

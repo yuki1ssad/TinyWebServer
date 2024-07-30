@@ -1,7 +1,7 @@
 #include "httpresponse.h"
 
 
-static const std::unordered_map<std::string, std::string> HttpResponse::SUFFIX_TYPE
+const std::unordered_map<std::string, std::string> HttpResponse::SUFFIX_TYPE
 {
     { ".html",  "text/html" },
     { ".xml",   "text/xml" },
@@ -23,14 +23,14 @@ static const std::unordered_map<std::string, std::string> HttpResponse::SUFFIX_T
     { ".css",   "text/css "},
     { ".js",    "text/javascript "},
 };
-static const std::unordered_map<int, std::string> HttpResponse::CODE_STATUS
+const std::unordered_map<int, std::string> HttpResponse::CODE_STATUS
 {
     {200, "OK"},
     {400, "Bad Request"},
     {403, "Forbidden"},
     {404, "Not Found"},
 };
-static const std::unordered_map<int, std::string> HttpResponse::CODE_PATH
+const std::unordered_map<int, std::string> HttpResponse::CODE_PATH
 {
     {400, "/400.html"},
     {403, "/403.html"},
@@ -46,7 +46,7 @@ void HttpResponse::_addStateLine(Buffer &buff)
         _code = 400;
         status = CODE_STATUS.find(400)->second;
     }
-    buff.append("HTTP/1.1 " + to_string(_code) + " " + status + "\r\n");
+    buff.append("HTTP/1.1 " + std::to_string(_code) + " " + status + "\r\n");
 }
 
 void HttpResponse::_addHeader(Buffer &buff)
@@ -71,7 +71,7 @@ void HttpResponse::_addContent(Buffer &buff)
 
     /* 将文件映射到内存提高文件的访问速度 
         MAP_PRIVATE 建立一个写入时拷贝的私有映射*/
-    LOG_DEBUG("file path %s", (srcDir_ + path_).data());
+    LOG_DEBUG("file path %s", (_srcDir + _path).data());
     int* mmRet = (int*)mmap(0, _mmFileStat.st_size, PROT_READ, MAP_PRIVATE, srcFd, 0);
     if(*mmRet == -1) {
         errorContent(buff, "File NotFound!");
@@ -79,7 +79,7 @@ void HttpResponse::_addContent(Buffer &buff)
     }
     _mmFile = (char*)mmRet;
     close(srcFd);
-    buff.append("Content-length: " + to_string(mmFileStat_.st_size) + "\r\n\r\n");
+    buff.append("Content-length: " + std::to_string(_mmFileStat.st_size) + "\r\n\r\n");
 }
 
 void HttpResponse::_errorHtml()
@@ -117,7 +117,7 @@ HttpResponse::~HttpResponse()
     unmapFile();
 }
 
-void HttpResponse::init(const std::string& srcDir, std::string& path, bool isKeepAlive = false, int code = -1)
+void HttpResponse::init(const std::string& srcDir, std::string& path, bool isKeepAlive, int code)
 {
     assert(_srcDir != "");
     if (_mmFile) {
@@ -151,7 +151,7 @@ void HttpResponse::unmapFile()
 {
     if (_mmFile) {
         munmap(_mmFile, _mmFileStat.st_size);
-        _mmFile == nullptr;
+        _mmFile = nullptr;
     }
 }
 
@@ -176,10 +176,10 @@ void HttpResponse::errorContent(Buffer& buff, std::string message)
     } else {
         status = "Bad Request";
     }
-    body += to_string(_code) + " : " + status  + "\n";
+    body += std::to_string(_code) + " : " + status  + "\n";
     body += "<p>" + message + "</p>";
     body += "<hr><em>TinyWebServer</em></body></html>";
 
-    buff.append("Content-length: " + to_string(body.size()) + "\r\n\r\n");
+    buff.append("Content-length: " + std::to_string(body.size()) + "\r\n\r\n");
     buff.append(body);
 }
