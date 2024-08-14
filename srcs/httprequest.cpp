@@ -236,7 +236,7 @@ bool HttpRequest::parse(Buffer& buff)
         if (lineEnd == buff.beginWrite()) {
             break;
         }
-        buff.retrieveUnit(lineEnd + 2);
+        buff.retrieveUntil(lineEnd + 2);
     }
     LOG_DEBUG("[%s], [%s], [%s]", _method.c_str(), _path.c_str(), _version.c_str());
     return true;

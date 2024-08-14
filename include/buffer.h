@@ -32,7 +32,7 @@ public:
     void ensureWriteable(std::size_t len);
     void hasWriten(std::size_t len);
     void retrieve(std::size_t len);
-    void retrieveUnit(const char* end);
+    void retrieveUntil(const char* end);
     void retrieveAll();
     std::string retrieveAllToStr();
 
